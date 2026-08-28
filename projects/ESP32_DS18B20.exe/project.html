@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vmontesinos : : WVRS Radiometer Thermal Telemetry</title>
+  <link rel="stylesheet" href="../../style.css">
+    <link rel="icon" type="image/png" href="../../ufo.gif">
+
+ <style>
+    .page-container {
+  max-width: 800px; /* Ajusta este valor (ej. 768px, 800px, 900px) al ancho exacto de tus otras páginas */
+  margin: 0 auto;   /* Centra todo el contenido horizontalmente */
+  padding: 0 16px;  /* Evita que toque los bordes en pantallas móviles */
+}
+    /* High contrast & clean retro theme override */
+    .explorer-panel {
+      background-color: #ffffff !important;
+      color: #111111 !important;
+      padding: 18px;
+    }
+    .story-text p {
+      color: #1a1a1a;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .story-text strong {
+      color: #000000;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+    .photo-card {
+      border: 1px solid #d0d0d0;
+      background: #fcfcfc;
+      padding: 8px;
+      box-shadow: 2px 2px 0px #e0e0e0;
+    }
+    .photo-card img {
+      width: 100%;
+      height: auto;
+      max-height: 240px;
+      object-fit: contain;
+      display: block;
+      border: 1px solid #ccc;
+    }
+    .full-width-chart {
+      grid-column: 1 / -1;
+    }
+    .full-width-chart img {
+      max-height: 380px;
+      object-fit: contain;
+    }
+    .photo-caption {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #555;
+      margin-top: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+  <p class="top-tagline">mzvic@mzvic:~$ <span class="hl-orange">./arduino-ide.AppImage </span> <span class="hl-pink">--no-sandbox</span><span class="cursor">&nbsp;</span></p>
+
+    <!-- TOP NAVIGATION BAR -->
+  <nav class="nav-bar">
+    <a href="../../index.html" class="nav-btn nav-home active">🏠 home</a>
+    <a href="../../about.html" class="nav-btn nav-about">🗃️ about</a>
+    <a href="../../projects.html" class="nav-btn nav-projects">🛠️ projects</a>
+    <a href="../../books.html" class="nav-btn nav-books">📚 books</a>
+  </nav>
+
+    <!-- PROJECT PANEL -->
+    <div class="layout single-col">
+      <section class="panel panel-green">
+        
+        <div class="panel-head">
+          <span class="panel-title">WVRS Thermal Telemetry System</span>
+          <div class="panel-badges">
+            <span class="pill pill-cyan">STATUS: Completed</span>
+            <span class="pill pill-visits">2026-08-28</span>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="explorer-bar">📁 C:\Users\Root\Projects\wvrs_temp_logger\log.md</div>
+          
+          <div class="explorer-panel story-text" style="margin-bottom: 12px;">
+            
+            <p>
+               We were running into a latency bottleneck with the thermal monitoring of the WVR22GHz project in CePIA. The legacy stack handled everything inside a Raspberry Pi OS environment, but between kernel scheduling overhead and synchronous 1-Wire calls, latency went off the rails. To accurately track thermal data in real time, we had to delegate acquisition to a dedicated MCU.
+            </p>
+
+            <!-- HARDWARE ASSEMBLY PHOTOS -->
+            <div class="photo-grid">
+              <div class="photo-card">
+                <img src="docs/ConexionesESP32-S3.png" alt="[ESP32-S3 Board and Pull-up Wiring]">
+                <div class="photo-caption">Fig 1. ESP32-S3 pinout detail with the 4.7kΩ pull-up resistor between VDD and DATA.</div>
+              </div>
+              <div class="photo-card">
+                <img src="docs/ConexionesDS18B20.png" alt="[DS18B20 Parallel Sensor Harness]">
+                <div class="photo-caption">Fig 2. Dual DS18B20 sensor harness connected in parallel to the 1-Wire bus (GPIO 4).</div>
+              </div>
+            </div>
+
+            <p>
+              I swapped the Pi for an <strong>ESP32-S3</strong> handling sampling duties. Both <strong>DS18B20</strong> sensors (antenna body and ambient air) sit in parallel on GPIO 4 with a standard 4.7kΩ pull-up. I defined a packed C++ struct (<code>__attribute__((packed))</code>) sitting at exactly <strong>12 bytes</strong>, sending raw datagrams via <em>UDP Broadcast</em> over the LAN.
+            </p>
+
+            <div class="project-details" style="background: #eef8ee; border: 1px solid #b2d8b2; padding: 10px; margin: 12px 0;">
+              <p style="margin-bottom: 6px;"><strong>Binary Payload Definition (12 Bytes Packed):</strong></p>
+              <ul style="margin: 0; padding-left: 20px; font-family: 'Courier New', monospace; font-size: 11px; color: #111;">
+                <li><code>uint32_t timestamp_ms</code> (4 bytes) -> MCU relative uptime millisecond counter.</li>
+                <li><code>float temp_ambiente</code> (4 bytes) -> Ambient temperature float32 reading.</li>
+                <li><code>float temp_antena</code> (4 bytes) -> Antenna chassis temperature float32 reading.</li>
+              </ul>
+            </div>
+
+            <p>
+              The initial spec asked for 10 ms (100 Hz) sampling, but that's physically impossible given the DS18B20 ADC integration time. I dropped the sensor resolution to 9 bits, bringing minimum hardware conversion down to ~94 ms. Crucially, I set <code>setWaitForConversion(false)</code> in the driver to disable blocking calls, letting an asynchronous <code>millis()</code> state machine handle polling loops without stalling execution.
+            </p>
+
+            <!-- UDP LATENCY / PACKET INTERVAL PLOT -->
+            <div class="photo-grid">
+              <div class="photo-card full-width-chart">
+                <img src="docs/packet_loss.png" alt="[UDP Latency Histogram Chart]">
+                <div class="photo-caption">Fig 3. Inter-packet arrival interval histogram (Mode at 165 ms; packet drop spikes at multiples).</div>
+              </div>
+            </div>
+
+            <p>
+              On the host end, a lightweight <strong>Python</strong> script (<code>logger_udp.py</code>) binds to the UDP socket, unrolls the payload and flushes timestamps directly to a CSV stream. Profiling inter-packet intervals revealed a rock-solid base latency of <strong>165 ms (~6 Hz)</strong>.
+            </p>
+
+            <p>Here is the exact hardware timing breakdown of that 165 ms loop:</p>
+            <ul style="padding-left: 20px; font-family: 'Courier New', monospace; font-size: 11px;">
+              <li><strong>~15 ms:</strong> Issuing <code>Skip ROM</code> and <code>Convert T</code> broadcast commands over 1-Wire.</li>
+              <li><strong>~95 ms:</strong> Asynchronous 9-bit ADC integration cycle.</li>
+              <li><strong>~55 ms:</strong> Sequential scratchpad extraction from both sensors on the shared bus.</li>
+            </ul>
+<p style="margin-top: 10px;">
+              The packet interval plot shows occasional spikes at 330 ms and 495 ms. Since those are exact integer multiples, we know the ESP32 state machine never froze or dropped frames internally; these were just occasional UDP drops across the WiFi layer.
+            </p>
+            <!-- REAL MEASUREMENTS / TEMPERATURE DRIFT CHART -->
+            <div class="photo-grid">
+              <div class="photo-card full-width-chart">
+                <img src="docs/temp_plot.png" alt="[Insert Real Temperature Measurement Plot Here]">
+                <div class="photo-caption">Fig 4. Real-world thermal profile: Ambient vs. Antenna chassis temperature drift logged over time.</div>
+              </div>
+            </div>
+
+            
+
+          </div>
+
+          <div class="explorer-bar">📂 Project Attachments & Source</div>
+          <div class="explorer-panel">
+            <div class="xp-skills-grid">
+
+              <a href="docs/ESP32-S3.ino" class="xp-file-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/file_gears-2.png" class="retro-icon" alt="Code">
+                <div class="xp-file-info">
+                  <span class="xp-filename">ESP32-S3.ino</span>
+                  <span class="xp-file-desc">[C++ Firmware]</span>
+                </div>
+              </a>
+
+              <a href="docs/logger_udp.py" class="xp-file-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/file_gears-2.png" class="retro-icon" alt="Code">
+                <div class="xp-file-info">
+                  <span class="xp-filename">logger_udp.py</span>
+                  <span class="xp-file-desc">[Python Host Receiver]</span>
+                </div>
+              </a>
+
+              <a href="docs/SistemaMonitoreoDS18B20.pdf" class="xp-file-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/template_empty-2.png" class="retro-icon" alt="Doc">
+                <div class="xp-file-info">
+                  <span class="xp-filename">SistemaMonitoreoDS18B20.pdf</span>
+                  <span class="xp-file-desc">[CePIA Report PDF]</span>
+                </div>
+              </a>
+
+              <a href="docs/registro_temperaturas_20260824_091733.csv" class="xp-file-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/template_empty-2.png" class="retro-icon" alt="Data">
+                <div class="xp-file-info">
+                  <span class="xp-filename">registro_temperaturas_20260824_091733.csv</span>
+                  <span class="xp-file-desc">[Raw Telemetry Dataset]</span>
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+          <div class="explorer-hint">Devlog compiled successfully — 0 errors</div>
+        </div>
+
+        <footer class="panel-footer">
+          <div class="badges-container">
+            <span class="badge">TAGS: [CePIA] [ESP32-S3] [1-Wire] [UDP] [Python]</span>
+          </div>
+          <div>
+            <a href="projects.html" style="color: #000; font-family: 'Courier New', monospace; font-size: 11px; text-decoration: underline;">
+              ← Back to Projects
+            </a>
+          </div>
+        </footer>
+
+      </section>
+    </div>
+
+  </div>
+
+</body>
+</html>
