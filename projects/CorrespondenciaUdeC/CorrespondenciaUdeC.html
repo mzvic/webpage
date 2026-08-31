@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vmontesinos : : Correspondencia UdeC</title>
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="icon" type="image/png" href="../../ufo.gif">
+
+  <style>
+    .page-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    .explorer-panel {
+      background-color: #ffffff !important;
+      color: #111111 !important;
+      padding: 18px;
+    }
+    .story-text p {
+      color: #1a1a1a;
+      font-size: 13.5px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .story-text strong {
+      color: #000000;
+    }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+    .photo-card {
+      border: 1px solid #d0d0d0;
+      background: #fcfcfc;
+      padding: 8px;
+      box-shadow: 2px 2px 0px #e0e0e0;
+    }
+    .photo-card img {
+      width: 100%;
+      height: auto;
+      max-height: 240px;
+      object-fit: contain;
+      display: block;
+      border: 1px solid #ccc;
+    }
+    .full-width-chart {
+      grid-column: 1 / -1;
+    }
+    .full-width-chart img {
+      max-height: 380px;
+      object-fit: contain;
+    }
+    .photo-caption {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #555;
+      margin-top: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-container">
+    <p class="top-tagline">mzvic@mzvic:~$ <span class="hl-orange">streamlit run</span> <span class="hl-pink">app.py</span><span class="cursor">&nbsp;</span></p>
+
+    <nav class="nav-bar">
+      <a href="../../index.html" class="nav-btn nav-home">🏠 home</a>
+      <a href="../../about.html" class="nav-btn nav-about">🗃️ about</a>
+      <a href="../../projects.html" class="nav-btn nav-projects active">🛠️ projects</a>
+      <a href="../../books.html" class="nav-btn nav-books">📚 books</a>
+    </nav>
+
+    <div class="layout single-col">
+      <section class="panel panel-green">
+        
+        <div class="panel-head">
+          <span class="panel-title">Correspondencia UdeC</span>
+          <div class="panel-badges">
+            <span class="pill pill-cyan">STATUS: Completed</span>
+            <span class="pill pill-visits">2026-04-12</span>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="explorer-bar">📁 /home/root/CodingForFun/CorrespondenciaUdeC/README.md</div>
+          
+          <div class="explorer-panel story-text" style="margin-bottom: 12px;">
+            
+            <p>
+              Managing incoming official correspondence across departments often becomes a hassle when relying on loose spreadsheets and scattered PDF scans. To streamline administrative tracking, I developed <strong>Correspondencia UdeC</strong>: a responsive, full-stack local web system built with <strong>Streamlit</strong> and <strong>Pandas</strong> for quick document ingestion, status workflow tracking, and file association.
+            </p>
+
+
+            <p>
+              The system operates as a two-column interactive portal: the left side handles fast record entry with automated multi-file attachment handling, while the right side hosts a real-time searchable database. Uploaded documents are automatically sanitized, timestamped, and bound to specific tracking IDs (e.g., <code>UDEC-2026-001</code>) inside a dedicated file repository.
+            </p>
+            <div class="photo-grid">
+              <div class="photo-card full-width-chart">
+                <img src="demo.png" alt="Full Application Dashboard Overview">
+                <div class="photo-caption">Fig 1. Full dashboard view displaying the status transition pipeline and attachment download manager.</div>
+              </div>
+            </div>
+            <div class="project-details" style="background: #eef8ee; border: 1px solid #b2d8b2; padding: 10px; margin: 12px 0;">
+              <p style="margin-bottom: 6px;"><strong>Core System Architecture & Features:</strong></p>
+              <ul style="margin: 0; padding-left: 20px; font-family: 'Courier New', monospace; font-size: 11px; color: #111;">
+                <li><code>Text Normalization:</code> NFD Unicode decomposition to ensure search queries ignore accents/diacritics.</li>
+                <li><code>Multi-File Management:</code> Uploads PDFs/Images with automatic filename collision avoidance.</li>
+                <li><code>State Machine Tracking:</code> Tracks progress through 4 discrete states (Ingresada → En Revisión → Respondida → Archivada).</li>
+                <li><code>Institutional Branding:</code> Injected CSS matching UdeC blue (<code>#00386B</code>) and gold (<code>#EAAA00</code>) color schemes.</li>
+              </ul>
+            </div>
+
+            <p>
+              To ensure hassle-free search across historical entries, the application normalizes input strings via <code>unicodedata</code>. This allows users to filter incoming items by sender, tracking code, subject, or resolution notes without worrying about accents or case sensitivity.
+            </p>
+
+
+
+            <p>
+              Data persistence relies on a lightweight CSV-backed storage model that initializes seamlessly on launch, automatically maintaining schema compatibility whenever new fields (such as dynamic response notes) are introduced.
+            </p>
+
+          </div>
+
+          <div class="explorer-bar">📂 Project Attachments & Source</div>
+          <div class="explorer-panel">
+            <div class="xp-skills-grid">
+
+              <a href="https://github.com/mzvic/CorrespondenciaUdeC" class="xp-file-item">
+                <img src="https://win98icons.alexmeub.com/icons/png/file_gears-2.png" class="retro-icon" alt="Code">
+                <div class="xp-file-info">
+                  <span class="xp-filename">app.py</span>
+                  <span class="xp-file-desc">[Streamlit Application]</span>
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+          <div class="explorer-hint">Devlog compiled successfully — 0 errors</div>
+        </div>
+
+        <footer class="panel-footer">
+          <div class="badges-container">
+            <span class="badge">TAGS: [Python] [Streamlit] [Pandas] [UdeC] [CSV Engine]</span>
+          </div>
+          <div>
+            <a href="../../projects.html" style="color: #000; font-family: 'Courier New', monospace; font-size: 11px; text-decoration: underline;">
+              ← Back to Projects
+            </a>
+          </div>
+        </footer>
+
+      </section>
+    </div>
+
+  </div>
+
+</body>
+</html>
